@@ -37,7 +37,7 @@ public class GridController : MonoBehaviour
 
     protected virtual void Start()
     {
-        StartCoroutine(DisplayBreathFirstSearch(grid[11, 15], grid[0, 16]));
+        StartCoroutine(DisplayDepthFirstSearch(grid[11, 15], grid[0, 16]));
     }
 
     protected virtual void Update()
@@ -132,10 +132,11 @@ public class GridController : MonoBehaviour
                 yield break;
             }
 
+            //IEnumerable<Tile> tileNeighbors = GetTileNeighbors(currentTile).Where(tile => tile.IsPassable);
             IEnumerable<Tile> tileNeighbors = ShuffleTiles(GetTileNeighbors(currentTile)).Where(tile => tile.IsPassable);
             foreach (var tile in tileNeighbors)
             {
-                if (!visitedTiles.Contains(tile) && !frontier.Contains(tile))
+                if (!visitedTiles.Contains(tile))
                 {
                     frontier.Push(tile);
                     visitedTiles.Add(tile, currentTile);
