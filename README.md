@@ -1,1 +1,1 @@
-# Grid
+# Grid - A small Unity project.
