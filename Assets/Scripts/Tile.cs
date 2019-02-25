@@ -1,5 +1,5 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Assertions;
 
 internal class Tile
 {
@@ -15,8 +15,8 @@ internal class Tile
     {
         this.Row = row;
         this.Column = column;
-        this.spriteRenderer = spriteRenderer;
-        this.isPassable = isPassable;
+        this.SpriteRenderer = spriteRenderer;
+        this.IsPassable = isPassable;
         this.Cost = weight;
     }
 
@@ -28,11 +28,7 @@ internal class Tile
         }
         private set
         {
-            if (value < 0)
-            {
-                throw new ArgumentException("The row index cannot be less than zero.");
-            }
-
+            Assert.IsTrue(value >= 0);
             this.row = value;
         }
     }
@@ -45,12 +41,21 @@ internal class Tile
         }
         private set
         {
-            if (value < 0)
-            {
-                throw new ArgumentException("The column index cannot be less than zero.");
-            }
-
+            Assert.IsTrue(value >= 0);
             this.column = value;
+        }
+    }
+
+    private SpriteRenderer SpriteRenderer
+    {
+        get
+        {
+            return this.spriteRenderer;
+        }
+        set
+        {
+            Assert.IsNotNull(value);
+            this.spriteRenderer = value;
         }
     }
 
@@ -72,14 +77,9 @@ internal class Tile
         {
             return this.weight;
         }
-
-        internal set
+        set
         {
-            if (value < 0f)
-            {
-                throw new InvalidOperationException("The tile cost cannot be a negative number.");
-            }
-
+            Assert.IsTrue(value >= 0);
             this.weight = value;
         }
     }

@@ -40,15 +40,6 @@ public class GridController : MonoBehaviour
         StartCoroutine(DisplayDepthFirstSearch(grid[11, 15], grid[0, 16]));
     }
 
-    protected virtual void Update()
-    {
-    }
-
-    //private IEnumerable FindCheapestPath(Tile startTile, Tile endTile)
-    //{
-
-    //}
-
     private IEnumerator DisplayBreathFirstSearch(Tile startTile, Tile endTile)
     {
         startTile.Color = Color.green;
@@ -151,15 +142,7 @@ public class GridController : MonoBehaviour
             yield return new WaitForSeconds(DEFAULT_WAIT);
         }
     }
-
-    private void DisplayPath(LinkedList<Tile> path)
-    {
-        foreach (var tile in path)
-        {
-            tile.Color = Color.yellow;
-        }
-    }
-
+  
     private IEnumerator DisplayBreathFirstTraversal(Tile startTile)
     {
         var visitedTiles = new HashSet<Tile>();
@@ -213,6 +196,14 @@ public class GridController : MonoBehaviour
             }
 
             yield return new WaitForSeconds(DEFAULT_WAIT);
+        }
+    }
+
+    private void DisplayPath(LinkedList<Tile> path)
+    {
+        foreach (var tile in path)
+        {
+            tile.Color = Color.yellow;
         }
     }
 

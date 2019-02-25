@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 internal class Grid : IEnumerable<Tile>
 {
@@ -17,10 +18,12 @@ internal class Grid : IEnumerable<Tile>
                 // Mapping the vector coordinates to their positions in a matrix.
                 var position = new Vector2(parent.position.x + column, parent.position.y - row);
 
-                var prefabClone = (GameObject)UnityEngine.Object.Instantiate(tilePrefab, position, Quaternion.identity);
+                var prefabClone = Object.Instantiate(tilePrefab, position, Quaternion.identity);
+                Assert.IsNotNull(prefabClone);
                 prefabClone.transform.parent = parent;
 
                 var spriteRenderer = prefabClone.GetComponent<SpriteRenderer>();
+                Assert.IsNotNull(spriteRenderer);
                 spriteRenderer.color = tileColor;
 
                 grid[row, column] = new Tile(row, column, spriteRenderer);
