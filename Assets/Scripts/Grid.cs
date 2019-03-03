@@ -61,12 +61,7 @@ internal class Grid : IEnumerable<Tile>
     {
         get
         {
-            var allTiles = new List<Tile>();
-
-            foreach (var tile in this)
-            {
-                allTiles.Add(tile);
-            }
+            var allTiles = new List<Tile>(this);
 
             return allTiles;
         }
