@@ -1,9 +1,26 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(SpriteRenderer))]
-public class Tile : MonoBehaviour
+public class Tile : MonoBehaviour, IComparable<Tile>
 {
+    private Text m_textComponent = null;
+
+    private Text TextComponent
+    {
+        get
+        {
+            return m_textComponent;
+        }
+        set
+        {
+            Assert.IsNotNull(value);
+            m_textComponent = value;
+        }
+    }
+
     public int Row
     {
         get
@@ -42,6 +59,17 @@ public class Tile : MonoBehaviour
 
     public bool IsPassable { get; set; } = true;
 
+    public void Awake()
+    {
+        this.TextComponent = this.GetComponentInChildren<Text>();
+    }
+
+    public void SetText(string text)
+    {
+        Assert.IsNotNull(text);
+        this.TextComponent.text = text;
+    }
+
     public Vector2Int ToVector2Int()
     {
         return new Vector2Int(this.Row, this.Column);
@@ -54,6 +82,13 @@ public class Tile : MonoBehaviour
         var result = $"{coordinates} : {weight}";
 
         return result;
+    }
+
+    public int CompareTo(Tile other)
+    {
+        int comparison = this.Weight.CompareTo(other.Weight);
+
+        return comparison;
     }
 }
 

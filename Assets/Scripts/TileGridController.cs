@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -30,64 +31,10 @@ public class TileGridController : MonoBehaviour
     {
         Assert.IsNotNull(m_grid);
 
-        var start = m_grid[11, 15];
+        var start = m_grid[9, 9];
         var end = m_grid[0, 23];
 
-        StartCoroutine(DisplayDepthFirstSearch(start, end));
-    }
-
-    private IEnumerator DisplayBreathFirstSearch(Tile start, Tile end)
-    {
-        Assert.IsNotNull(m_grid);
-        Assert.IsNotNull(start);
-        Assert.IsNotNull(end);
-
-        start.Color = m_startColor;
-        end.Color = m_endColor;
-
-        var visitedTiles = new Dictionary<Tile, Tile>();
-        visitedTiles.Add(start, null);
-
-        var frontier = new Queue<Tile>();
-        frontier.Enqueue(start);
-
-        while (frontier.Count > 0)
-        {
-            var current = frontier.Dequeue();
-
-            if (current != start && current != end)
-            {
-                current.Color = m_visitedTilesColor;
-            }
-
-            if (current == end)
-            {
-                var path = new LinkedList<Tile>(this.GetPathTo(end, visitedTiles));
-                path.RemoveFirst();
-                path.RemoveLast();
-
-                this.DisplayPath(path);
-
-                yield break;
-            }
-
-            var neighbors = m_grid.GetNeighbors(current).Where(tile => tile.IsPassable);
-            foreach (var tile in neighbors)
-            {
-                if (!visitedTiles.ContainsKey(tile))
-                {
-                    frontier.Enqueue(tile);
-                    visitedTiles.Add(tile, current);
-
-                    if (tile != end)
-                    {
-                        tile.Color = m_frontierColor;
-                    }
-                }
-            }
-
-            yield return new WaitForSeconds(DEFAULT_WAIT);
-        }
+        StartCoroutine(DisplayAStarSearch(start, end, CalculateEuclideanDistance));
     }
 
     private IEnumerator DisplayDepthFirstSearch(Tile start, Tile end)
@@ -99,8 +46,8 @@ public class TileGridController : MonoBehaviour
         start.Color = Color.green;
         end.Color = Color.red;
 
-        var visitedTiles = new Dictionary<Tile, Tile>();
-        visitedTiles.Add(start, null);
+        var visited = new Dictionary<Tile, Tile>();
+        visited.Add(start, null);
 
         var frontier = new Stack<Tile>();
         frontier.Push(start);
@@ -116,11 +63,7 @@ public class TileGridController : MonoBehaviour
 
             if (current == end)
             {
-                var path = new LinkedList<Tile>(this.GetPathTo(end, visitedTiles));
-                path.RemoveFirst();
-                path.RemoveLast();
-
-                this.DisplayPath(path);
+                this.DisplayPath(start, end, visited);
 
                 yield break;
             }
@@ -128,10 +71,10 @@ public class TileGridController : MonoBehaviour
             var neighbors = ShuffleTiles(m_grid.GetNeighbors(current).Where(tile => tile.IsPassable).ToList());
             foreach (var tile in neighbors)
             {
-                if (!visitedTiles.ContainsKey(tile))
+                if (!visited.ContainsKey(tile))
                 {
                     frontier.Push(tile);
-                    visitedTiles.Add(tile, current);
+                    visited.Add(tile, current);
 
                     if (tile != end)
                     {
@@ -144,15 +87,17 @@ public class TileGridController : MonoBehaviour
         }
     }
 
-    private IEnumerator DisplayBreathFirstTraversal(Tile start)
+    private IEnumerator DisplayBreathFirstSearch(Tile start, Tile end)
     {
         Assert.IsNotNull(m_grid);
         Assert.IsNotNull(start);
+        Assert.IsNotNull(end);
 
         start.Color = m_startColor;
+        end.Color = m_endColor;
 
-        var visitedTiles = new HashSet<Tile>();
-        visitedTiles.Add(start);
+        var visited = new Dictionary<Tile, Tile>();
+        visited.Add(start, null);
 
         var frontier = new Queue<Tile>();
         frontier.Enqueue(start);
@@ -160,16 +105,165 @@ public class TileGridController : MonoBehaviour
         while (frontier.Count > 0)
         {
             var current = frontier.Dequeue();
-            current.Color = m_visitedTilesColor;
+
+            if (current != start && current != end)
+            {
+                current.Color = m_visitedTilesColor;
+            }
+
+            if (current == end)
+            {
+                this.DisplayPath(start, end, visited);
+
+                yield break;
+            }
+
+            var neighbors = m_grid.GetNeighbors(current).Where(tile => tile.IsPassable);
+            foreach (var tile in neighbors)
+            {
+                if (!visited.ContainsKey(tile))
+                {
+                    frontier.Enqueue(tile);
+                    visited.Add(tile, current);
+
+                    if (tile != end)
+                    {
+                        tile.Color = m_frontierColor;
+                    }
+                }
+            }
+
+            yield return new WaitForSeconds(DEFAULT_WAIT);
+        }
+    }
+
+    private IEnumerator DisplayUniformCostSearch(Tile start, Tile end) 
+    {
+        // Uniform Cost Search = Dijkstra Search with specific (start, end).
+
+        Assert.IsNotNull(m_grid);
+        Assert.IsNotNull(start);
+        Assert.IsNotNull(end);
+
+        start.Color = m_startColor;
+        end.Color = m_endColor;
+
+        var visited = new Dictionary<Tile, Tile>();
+        visited.Add(start, null);
+
+        var frontier = new PriorityQueue<Tile>(); // Stable priority queue.
+        frontier.Enqueue(start);
+
+        var costs = InitializePathCosts(m_grid);
+        costs[start] = 0.0f;
+
+        while (frontier.Count > 0)
+        {
+            var current = frontier.Dequeue();
+            if (current != start && current != end)
+            {
+                current.Color = m_visitedTilesColor;
+            }
+
+            if (current == end)
+            {
+                this.DisplayPath(start, end, visited);
+
+                yield break;
+            }
 
             var neighbors = m_grid.GetNeighbors(current);
             foreach (var tile in neighbors)
             {
-                if (!visitedTiles.Contains(tile))
+                var currentCost = costs[tile];
+                var newCost = costs[current] + tile.Weight;
+
+                if (newCost < currentCost)
+                {
+                    costs[tile] = newCost;
+
+                    tile.SetText(newCost.ToString());
+                }
+
+                if (!visited.ContainsKey(tile))
                 {
                     frontier.Enqueue(tile);
-                    visitedTiles.Add(tile);
-                    tile.Color = m_frontierColor;
+                    visited.Add(tile, current);
+
+                    if (tile != end)
+                    {
+                        tile.Color = m_frontierColor;
+                    }
+                }
+            }
+
+            yield return new WaitForSeconds(DEFAULT_WAIT);
+        }
+    }
+
+    private IEnumerator DisplayAStarSearch(Tile start, Tile end, Func<Tile, Tile, float> heuristic)
+    {
+        Assert.IsNotNull(m_grid);
+        Assert.IsNotNull(start);
+        Assert.IsNotNull(end);
+
+        start.Color = m_startColor;
+        end.Color = m_endColor;
+
+        Comparison<Tile> heuristicComparison = (a, b) => 
+        {
+            var aPriority = a.Weight + heuristic(a, end);
+            var bPriority = b.Weight + heuristic(b, end);
+
+            return aPriority.CompareTo(bPriority);
+        };
+
+        var visited = new Dictionary<Tile, Tile>();
+        visited.Add(start, null);
+
+        var frontier = new PriorityQueue<Tile>(heuristicComparison); // Stable priority queue.
+        frontier.Enqueue(start);
+
+        var costs = InitializePathCosts(m_grid);
+        costs[start] = 0.0f;
+
+        while (frontier.Count > 0)
+        {
+            var current = frontier.Dequeue();
+            if (current != start && current != end)
+            {
+                current.Color = m_visitedTilesColor;
+            }
+
+            if (current == end)
+            {
+                this.DisplayPath(start, end, visited);
+
+                yield break;
+            }
+
+            var neighbors = m_grid.GetNeighbors(current);
+            foreach (var tile in neighbors)
+            {
+                var currentCost = costs[tile];
+                var newCost = costs[current] + tile.Weight;
+
+                if (newCost < currentCost)
+                {
+                    costs[tile] = newCost;
+
+                    tile.SetText(newCost.ToString());
+                }
+
+                if (!visited.ContainsKey(tile))
+                {
+                    frontier.Enqueue(tile);
+                    visited.Add(tile, current);
+
+                    if (tile != end)
+                    {
+                        tile.Color = m_frontierColor;
+                    }
                 }
             }
 
@@ -214,13 +308,112 @@ public class TileGridController : MonoBehaviour
         }
     }
 
-    private void DisplayPath(IEnumerable<Tile> path)
+    private IEnumerator DisplayBreathFirstTraversal(Tile start)
     {
-        Assert.IsNotNull(path);
+        Assert.IsNotNull(m_grid);
+        Assert.IsNotNull(start);
+
+        start.Color = m_startColor;
+
+        var visitedTiles = new HashSet<Tile>();
+        visitedTiles.Add(start);
+
+        var frontier = new Queue<Tile>();
+        frontier.Enqueue(start);
+
+        while (frontier.Count > 0)
+        {
+            var current = frontier.Dequeue();
+            current.Color = m_visitedTilesColor;
+
+            var neighbors = m_grid.GetNeighbors(current);
+            foreach (var tile in neighbors)
+            {
+                if (!visitedTiles.Contains(tile))
+                {
+                    frontier.Enqueue(tile);
+                    visitedTiles.Add(tile);
+                    tile.Color = m_frontierColor;
+                }
+            }
+
+            yield return new WaitForSeconds(DEFAULT_WAIT);
+        }
+    }
+
+    private IEnumerator DisplayDijkstraAlgorithm(Tile start)
+    {
+        Assert.IsNotNull(m_grid);
+        Assert.IsNotNull(start);
+
+        var visited = new HashSet<Tile>();
+        visited.Add(start);
+
+        var frontier = new PriorityQueue<Tile>(); // Stable priority queue.
+        frontier.Enqueue(start);
+
+        var costs = InitializePathCosts(m_grid);
+        costs[start] = 0.0f;
+
+        start.Color = m_startColor;
+        start.SetText("0");
+
+        while (frontier.Count > 0)
+        {
+            var current = frontier.Dequeue();
+            if (current != start)
+            {
+                current.Color = m_visitedTilesColor;
+            }
+
+            var neighbors = m_grid.GetNeighbors(current);
+            foreach (var tile in neighbors)
+            {
+                var currentCost = costs[tile];
+                var newCost = costs[current] + tile.Weight;
+
+                if (newCost < currentCost)
+                {
+                    costs[tile] = newCost;
+
+                    tile.SetText(newCost.ToString());
+                }
+
+                if (!visited.Contains(tile))
+                {
+                    frontier.Enqueue(tile);
+                    visited.Add(tile);
+
+                    tile.Color = m_frontierColor;
+                }
+            }
+
+            yield return new WaitForSeconds(DEFAULT_WAIT);
+        }
+    }
+
+    private void DisplayPath(Tile start, Tile end, IDictionary<Tile, Tile> visitedTiles)
+    {
+        Assert.IsNotNull(start);
+        Assert.IsNotNull(end);
+        Assert.IsNotNull(visitedTiles);
+
+        var path = this.GetPathTo(end, visitedTiles);
 
         foreach (var tile in path)
         {
-            tile.Color = m_pathColor;
+            if (tile == start)
+            {
+                tile.Color = m_startColor;
+            }
+            else if (tile == end)
+            {
+                tile.Color = m_endColor;
+            }
+            else
+            {
+                tile.Color = m_pathColor;
+            }
         }
     }
 
@@ -250,13 +443,27 @@ public class TileGridController : MonoBehaviour
         var count = tiles.Count;
         for (var index = 0; index < count; index++)
         {
-            int randomIndex = index + Random.Range(0, count - index);
+            int randomIndex = index + UnityEngine.Random.Range(0, count - index);
             var temp = tiles[index];
             tiles[index] = tiles[randomIndex];
             tiles[randomIndex] = temp;
         }
 
         return tiles;
+    }
+
+    private float CalculateManhattanDistance(Tile a, Tile b)
+    {
+        float manhattanDistance = Mathf.Abs(a.Row - b.Row) + Mathf.Abs(a.Column - b.Column);
+
+        return manhattanDistance;
+    }
+
+    private float CalculateEuclideanDistance(Tile a, Tile b)
+    {
+        float euclideanDistance = Vector2Int.Distance(a.ToVector2Int(), b.ToVector2Int());
+
+        return euclideanDistance;
     }
 
     private IDictionary<Tile, float> InitializePathCosts(TileGrid grid)
