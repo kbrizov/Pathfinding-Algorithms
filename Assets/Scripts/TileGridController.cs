@@ -37,9 +37,9 @@ public class TileGridController : MonoBehaviour
         var start = m_grid[9, 3];
         var end = m_grid[3, 33];
 
-        this.CreateExpensiveArea(m_grid[1, 15], m_grid[18, 20], 10);
+        this.CreateExpensiveArea(m_grid[0, 15], m_grid[18, 20], 10);
 
-        this.StartCoroutine(DisplayUniformCostSearch(start, end));
+        this.StartCoroutine(DisplayAStarSearch(start, end, CalculateEuclideanDistance));
     }
 
     private IEnumerator DisplayDepthFirstSearch(Tile start, Tile end)
@@ -221,10 +221,13 @@ public class TileGridController : MonoBehaviour
         end.Color = m_endColor;
         end.SetText("X");
 
+        var costs = InitializePathCosts(m_grid);
+        costs[start] = 0.0f;
+
         Comparison<Tile> heuristicComparison = (a, b) => 
         {
-            var aPriority = a.Weight + heuristic(a, end);
-            var bPriority = b.Weight + heuristic(b, end);
+            var aPriority = costs[a] + heuristic(a, end);
+            var bPriority = costs[b] + heuristic(b, end);
 
             return aPriority.CompareTo(bPriority);
         };
@@ -234,9 +237,6 @@ public class TileGridController : MonoBehaviour
 
         var frontier = new PriorityQueue<Tile>(heuristicComparison); // Stable priority queue.
         frontier.Enqueue(start);
-
-        var costs = InitializePathCosts(m_grid);
-        costs[start] = 0.0f;
 
         while (frontier.Count > 0)
         {
