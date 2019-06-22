@@ -37,9 +37,9 @@ public class TileGridController : MonoBehaviour
         var start = m_grid[9, 3];
         var end = m_grid[3, 33];
 
-        this.CreateExpensiveArea(m_grid[0, 15], m_grid[15, 20], 10);
+        this.CreateExpensiveArea(m_grid[1, 15], m_grid[18, 20], 10);
 
-        this.StartCoroutine(DisplayAStarSearch(start, end, CalculateEuclideanDistance));
+        this.StartCoroutine(DisplayUniformCostSearch(start, end));
     }
 
     private IEnumerator DisplayDepthFirstSearch(Tile start, Tile end)
@@ -156,14 +156,14 @@ public class TileGridController : MonoBehaviour
         end.Color = m_endColor;
         end.SetText("X");
 
+        var costs = InitializePathCosts(m_grid);
+        costs[start] = 0.0f;
+
         var visited = new Dictionary<Tile, Tile>();
         visited.Add(start, null);
 
-        var frontier = new PriorityQueue<Tile>(); // Stable priority queue.
+        var frontier = new PriorityQueue<Tile>((a, b) => costs[a].CompareTo(costs[b])); // Stable priority queue.
         frontier.Enqueue(start);
-
-        var costs = InitializePathCosts(m_grid);
-        costs[start] = 0.0f;
 
         while (frontier.Count > 0)
         {
@@ -359,14 +359,14 @@ public class TileGridController : MonoBehaviour
         Assert.IsNotNull(m_grid);
         Assert.IsNotNull(start);
 
+        var costs = InitializePathCosts(m_grid);
+        costs[start] = 0.0f;
+
         var visited = new HashSet<Tile>();
         visited.Add(start);
 
-        var frontier = new PriorityQueue<Tile>(); // Stable priority queue.
+        var frontier = new PriorityQueue<Tile>((a, b) => costs[a].CompareTo(costs[b])); // Stable priority queue.
         frontier.Enqueue(start);
-
-        var costs = InitializePathCosts(m_grid);
-        costs[start] = 0.0f;
 
         start.Color = m_startColor;
         start.SetText("0");
