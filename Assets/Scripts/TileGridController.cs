@@ -190,6 +190,11 @@ public class TileGridController : MonoBehaviour
                 {
                     costs[tile] = newCost;
 
+                    if (visited.ContainsKey(tile))
+                    {
+                        visited[tile] = current;
+                    }
+
                     tile.SetText(newCost.ToString());
                 }
 
@@ -262,6 +267,11 @@ public class TileGridController : MonoBehaviour
                 if (newCost < currentCost)
                 {
                     costs[tile] = newCost;
+
+                    if (visited.ContainsKey(tile))
+                    {
+                        visited[tile] = current;
+                    }
 
                     tile.SetText(newCost.ToString());
                 }
