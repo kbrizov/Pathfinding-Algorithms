@@ -16,10 +16,13 @@ public class TileGridController : MonoBehaviour
     private Color m_endColor = Color.red;
 
     [SerializeField]
+    private Color m_expensiveAreaColor = new Color(0.19f, 0.65f, 0.43f);
+
+    [SerializeField]
     private Color m_pathColor = new Color(0.73f, 0.0f, 1.0f);
 
     [SerializeField]
-    private Color m_visitedTilesColor = new Color(0.8f, 0.75f, 0.7f);
+    private Color m_visitedTilesColor = new Color(0.75f, 0.55f, 0.38f);
 
     [SerializeField]
     private Color m_frontierColor = new Color(0.4f, 0.53f, 0.8f);
@@ -31,10 +34,12 @@ public class TileGridController : MonoBehaviour
     {
         Assert.IsNotNull(m_grid);
 
-        var start = m_grid[9, 9];
-        var end = m_grid[0, 23];
+        var start = m_grid[9, 3];
+        var end = m_grid[3, 33];
 
-        StartCoroutine(DisplayAStarSearch(start, end, CalculateEuclideanDistance));
+        this.CreateExpensiveArea(m_grid[0, 15], m_grid[15, 20], 10);
+
+        this.StartCoroutine(DisplayAStarSearch(start, end, CalculateEuclideanDistance));
     }
 
     private IEnumerator DisplayDepthFirstSearch(Tile start, Tile end)
@@ -146,7 +151,10 @@ public class TileGridController : MonoBehaviour
         Assert.IsNotNull(end);
 
         start.Color = m_startColor;
+        start.SetText("0");
+
         end.Color = m_endColor;
+        end.SetText("X");
 
         var visited = new Dictionary<Tile, Tile>();
         visited.Add(start, null);
@@ -172,7 +180,7 @@ public class TileGridController : MonoBehaviour
                 yield break;
             }
 
-            var neighbors = m_grid.GetNeighbors(current);
+            var neighbors = m_grid.GetNeighbors(current).Where(tile => tile.IsPassable);
             foreach (var tile in neighbors)
             {
                 var currentCost = costs[tile];
@@ -208,7 +216,10 @@ public class TileGridController : MonoBehaviour
         Assert.IsNotNull(end);
 
         start.Color = m_startColor;
+        start.SetText("0");
+
         end.Color = m_endColor;
+        end.SetText("X");
 
         Comparison<Tile> heuristicComparison = (a, b) => 
         {
@@ -242,7 +253,7 @@ public class TileGridController : MonoBehaviour
                 yield break;
             }
 
-            var neighbors = m_grid.GetNeighbors(current);
+            var neighbors = m_grid.GetNeighbors(current).Where(tile => tile.IsPassable);
             foreach (var tile in neighbors)
             {
                 var currentCost = costs[tile];
@@ -300,6 +311,7 @@ public class TileGridController : MonoBehaviour
                 {
                     frontier.Push(tile);
                     visitedTiles.Add(tile);
+
                     tile.Color = m_frontierColor;
                 }
             }
@@ -333,6 +345,7 @@ public class TileGridController : MonoBehaviour
                 {
                     frontier.Enqueue(tile);
                     visitedTiles.Add(tile);
+
                     tile.Color = m_frontierColor;
                 }
             }
@@ -389,6 +402,31 @@ public class TileGridController : MonoBehaviour
             }
 
             yield return new WaitForSeconds(DEFAULT_WAIT);
+        }
+    }
+
+    private void CreateExpensiveArea(Tile topLeft, Tile bottomRight, uint weight)
+    {
+        Assert.IsNotNull(topLeft);
+        Assert.IsNotNull(bottomRight);
+
+        int width = Mathf.Abs(topLeft.Column - bottomRight.Column);
+        int height = Mathf.Abs(topLeft.Row - bottomRight.Row);
+
+        int startRow = topLeft.Row;
+        int endRow = topLeft.Row + height;
+
+        int startColumn = topLeft.Column;
+        int endColumn = topLeft.Column + width;
+
+        for (int row = startRow; row <= endRow; row++)
+        {
+            for (int column = startColumn; column <= endColumn; column++)
+            {
+                var tile = m_grid[row, column];
+                tile.Weight = weight;
+                tile.Color = m_expensiveAreaColor;
+            }
         }
     }
 

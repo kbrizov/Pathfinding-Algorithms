@@ -35,6 +35,10 @@ public class TileGrid : MonoBehaviour, IEnumerable<Tile>
         }
     }
 
+    public uint Rows => m_rows;
+
+    public uint Columns => m_columns;
+
     public void Awake()
     {
         this.InitializeGrid();
@@ -94,11 +98,11 @@ public class TileGrid : MonoBehaviour, IEnumerable<Tile>
     {
         Assert.IsNotNull(m_tilePrefab);
 
-        m_grid = new Tile[m_rows, m_columns];
+        m_grid = new Tile[Rows, Columns];
 
-        for (int row = 0; row < m_rows; row++)
+        for (int row = 0; row < Rows; row++)
         {
-            for (int column = 0; column < m_columns; column++)
+            for (int column = 0; column < Columns; column++)
             {
                 // Map the new square's vector coordinates to their positions in a matrix (XY plane).
                 var position = new Vector2(this.transform.position.x + column, this.transform.position.y - row);
@@ -123,14 +127,14 @@ public class TileGrid : MonoBehaviour, IEnumerable<Tile>
 
     private bool IsRowInRange(int row)
     {
-        bool isInRange = (0 <= row && row < m_rows);
+        bool isInRange = (0 <= row && row < Rows);
 
         return isInRange;
     }
 
     private bool IsColumnInRange(int column)
     {
-        bool isInRange = (0 <= column && column < m_columns);
+        bool isInRange = (0 <= column && column < Columns);
 
         return isInRange;
     }
