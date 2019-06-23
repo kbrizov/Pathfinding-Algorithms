@@ -1,4 +1,4 @@
-# Search algorithms vizualizations.
+# Search algorithms visualizations.
 Inspired by http://www.redblobgames.com/
 
 ## Depth First Search
