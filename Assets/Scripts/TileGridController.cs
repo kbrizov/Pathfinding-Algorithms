@@ -214,6 +214,84 @@ public class TileGridController : MonoBehaviour
         }
     }
 
+    private IEnumerator DisplayBestFirstSearch(Tile start, Tile end, Func<Tile, Tile, float> heuristic)
+    {
+        Assert.IsNotNull(m_grid);
+        Assert.IsNotNull(start);
+        Assert.IsNotNull(end);
+
+        start.Color = m_startColor;
+        start.SetText("0");
+
+        end.Color = m_endColor;
+        end.SetText("X");
+
+        var costs = InitializePathCosts(m_grid);
+        costs[start] = 0.0f;
+
+        Comparison<Tile> heuristicComparison = (a, b) =>
+        {
+            var aPriority = heuristic(a, end);
+            var bPriority = heuristic(b, end);
+
+            return aPriority.CompareTo(bPriority);
+        };
+
+        var visited = new Dictionary<Tile, Tile>();
+        visited.Add(start, null);
+
+        var frontier = new PriorityQueue<Tile>(heuristicComparison); // Stable priority queue.
+        frontier.Enqueue(start);
+
+        while (frontier.Count > 0)
+        {
+            var current = frontier.Dequeue();
+            if (current != start && current != end)
+            {
+                current.Color = m_visitedTilesColor;
+            }
+
+            if (current == end)
+            {
+                this.DisplayPath(start, end, visited);
+
+                yield break;
+            }
+
+            var neighbors = m_grid.GetNeighbors(current).Where(tile => tile.IsPassable);
+            foreach (var tile in neighbors)
+            {
+                var currentCost = costs[tile];
+                var newCost = costs[current] + tile.Weight;
+
+                if (newCost < currentCost)
+                {
+                    costs[tile] = newCost;
+
+                    if (visited.ContainsKey(tile))
+                    {
+                        visited[tile] = current;
+                    }
+
+                    tile.SetText(newCost.ToString());
+                }
+
+                if (!visited.ContainsKey(tile))
+                {
+                    frontier.Enqueue(tile);
+                    visited.Add(tile, current);
+
+                    if (tile != end)
+                    {
+                        tile.Color = m_frontierColor;
+                    }
+                }
+            }
+
+            yield return new WaitForSeconds(DEFAULT_WAIT);
+        }
+    }
+
     private IEnumerator DisplayAStarSearch(Tile start, Tile end, Func<Tile, Tile, float> heuristic)
     {
         Assert.IsNotNull(m_grid);
@@ -446,10 +524,14 @@ public class TileGridController : MonoBehaviour
         Assert.IsNotNull(end);
         Assert.IsNotNull(visitedTiles);
 
+        int count = 0;
         var path = this.GetPathTo(end, visitedTiles);
 
         foreach (var tile in path)
         {
+            tile.SetText(count.ToString());
+            count++;
+
             if (tile == start)
             {
                 tile.Color = m_startColor;
