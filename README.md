@@ -1,4 +1,4 @@
-# Pathfinding algorithms vizualizations.
+# Search algorithms vizualizations.
 Inspired by http://www.redblobgames.com/
 
 ## Depth First Search
