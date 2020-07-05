@@ -14,7 +14,7 @@ public class PriorityQueue<T> where T : IComparable<T>
         m_multiset = new OrderedBag<T>();
     }
 
-    public PriorityQueue(Comparison<T> comparison) 
+    public PriorityQueue(Comparison<T> comparison)
         : this(Comparer<T>.Create(comparison))
     {
     }
@@ -29,7 +29,7 @@ public class PriorityQueue<T> where T : IComparable<T>
         m_multiset = new OrderedBag<T>(collection);
     }
 
-    public PriorityQueue(IEnumerable<T> collection, Comparison<T> comparison) 
+    public PriorityQueue(IEnumerable<T> collection, Comparison<T> comparison)
         : this(collection, Comparer<T>.Create(comparison))
     {
     }

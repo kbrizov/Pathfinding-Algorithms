@@ -56,7 +56,9 @@ public class Tile : MonoBehaviour, IComparable<Tile>
     {
         get
         {
-            return (int)Mathf.Abs(this.transform.localPosition.y);
+            int row = Convert.ToInt32(Mathf.Abs(this.transform.localPosition.y));
+
+            return row;
         }
     }
 
@@ -64,7 +66,9 @@ public class Tile : MonoBehaviour, IComparable<Tile>
     {
         get
         {
-            return (int)Mathf.Abs(this.transform.localPosition.x);
+            int column = Convert.ToInt32(Mathf.Abs(this.transform.localPosition.x));
+
+            return column;
         }
     }
 

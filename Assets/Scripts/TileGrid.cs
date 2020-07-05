@@ -7,6 +7,18 @@ public class TileGrid : MonoBehaviour, IEnumerable<Tile>
 {
     private Tile[,] m_grid = null;
 
+    private readonly Vector2Int[] m_directions = new Vector2Int[]
+    {
+        new Vector2Int(1, 0),
+        //new Vector2Int(1, 1),
+        new Vector2Int(0, 1),
+        //new Vector2Int(-1, 1),
+        new Vector2Int(-1, 0),
+        //new Vector2Int(-1, -1),
+        new Vector2Int(0, -1),
+        //new Vector2Int(1, -1)
+    };
+
     [SerializeField]
     private uint m_rows = 8;
 
@@ -59,39 +71,27 @@ public class TileGrid : MonoBehaviour, IEnumerable<Tile>
 
     public IEnumerable<Tile> GetNeighbors(int row, int column)
     {
-        Vector2Int[] directions = new Vector2Int[]
-        {
-            new Vector2Int(1, 0),
-            //new Vector2Int(1, 1),
-            new Vector2Int(0, 1),
-            //new Vector2Int(-1, 1),
-            new Vector2Int(-1, 0),
-            //new Vector2Int(-1, -1),
-            new Vector2Int(0, -1),
-            //new Vector2Int(1, -1)
-        };
-
-        var position = this[row, column].ToVector2Int();
-        var neighbors = new List<Tile>(directions.Length);
-
-        foreach (var direction in directions)
-        {
-            var currentPosition = position + direction;
-
-            if (IsInRange(currentPosition.x, currentPosition.y))
-            {
-                neighbors.Add(this[currentPosition.x, currentPosition.y]);
-            }
-        }
-
-        return neighbors;
+        return this.GetNeighbors(this[row, column]);
     }
 
     public IEnumerable<Tile> GetNeighbors(Tile tile)
     {
         Assert.IsNotNull(tile);
 
-        return this.GetNeighbors(tile.Row, tile.Column);
+        var position = tile.ToVector2Int();
+        var neighbors = new List<Tile>(m_directions.Length);
+
+        foreach (var direction in m_directions)
+        {
+            var neighborPosition = position + direction;
+
+            if (IsInRange(neighborPosition.x, neighborPosition.y))
+            {
+                neighbors.Add(this[neighborPosition.x, neighborPosition.y]);
+            }
+        }
+
+        return neighbors;
     }
 
     private void InitializeGrid()

@@ -142,7 +142,7 @@ public class TileGridController : MonoBehaviour
         }
     }
 
-    private IEnumerator DisplayUniformCostSearch(Tile start, Tile end) 
+    private IEnumerator DisplayUniformCostSearch(Tile start, Tile end)
     {
         // Uniform Cost Search = Dijkstra Search with specific (start, end).
 
@@ -307,7 +307,7 @@ public class TileGridController : MonoBehaviour
         var costs = InitializePathCosts(m_grid);
         costs[start] = 0.0f;
 
-        Comparison<Tile> heuristicComparison = (a, b) => 
+        Comparison<Tile> heuristicComparison = (a, b) =>
         {
             var aPriority = costs[a] + heuristic(a, end);
             var bPriority = costs[b] + heuristic(b, end);
