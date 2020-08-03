@@ -27,3 +27,11 @@ The following packages were updated:
   com.unity.test-framework from version 1.0.13 to 1.1.11
 The following packages were removed:
   com.unity.package-manager-ui@2.2.0
+
+=== Mon Aug  3 08:38:17 2020
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were added:
+  com.unity.ide.visualstudio@2.0.2
