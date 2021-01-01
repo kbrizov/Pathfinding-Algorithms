@@ -549,6 +549,9 @@ public class TileGridController : MonoBehaviour
 
     private IEnumerable<Tile> GetPathTo(Tile end, IDictionary<Tile, Tile> visitedTiles)
     {
+        Assert.IsNotNull(end);
+        Assert.IsNotNull(visitedTiles);
+
         var path = new LinkedList<Tile>();
 
         var current = end;
@@ -569,6 +572,8 @@ public class TileGridController : MonoBehaviour
 
     private IList<Tile> ShuffleTiles(IList<Tile> tiles)
     {
+        Assert.IsNotNull(tiles);
+
         // Fisher-Yates shuffle algorithm.
         var count = tiles.Count;
         for (var index = 0; index < count; index++)
@@ -584,6 +589,9 @@ public class TileGridController : MonoBehaviour
 
     private float CalculateManhattanDistance(Tile a, Tile b)
     {
+        Assert.IsNotNull(a);
+        Assert.IsNotNull(b);
+
         float manhattanDistance = Mathf.Abs(a.Row - b.Row) + Mathf.Abs(a.Column - b.Column);
 
         return manhattanDistance;
@@ -591,6 +599,9 @@ public class TileGridController : MonoBehaviour
 
     private float CalculateEuclideanDistance(Tile a, Tile b)
     {
+        Assert.IsNotNull(a);
+        Assert.IsNotNull(b);
+
         float euclideanDistance = Vector2Int.Distance(a.ToVector2Int(), b.ToVector2Int());
 
         return euclideanDistance;
@@ -598,6 +609,8 @@ public class TileGridController : MonoBehaviour
 
     private IDictionary<Tile, float> InitializePathCosts(TileGrid grid)
     {
+        Assert.IsNotNull(grid);
+
         var costs = new Dictionary<Tile, float>();
 
         foreach (var tile in grid)
