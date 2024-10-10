@@ -44,12 +44,12 @@ namespace System.Collections.Generic
         {
             if (capacity < 0)
             {
-                throw new ArgumentOutOfRangeException("capacity", "Non-negative number required.");
+                throw new ArgumentOutOfRangeException(nameof(capacity), "Non-negative number required.");
             }
 
             if (comparer == null)
             {
-                throw new ArgumentNullException("comparer");
+                throw new ArgumentNullException(nameof(comparer));
             }
 
             m_array = new T[capacity];
@@ -72,7 +72,7 @@ namespace System.Collections.Generic
         {
             if (collection == null)
             {
-                throw new ArgumentNullException("collection");
+                throw new ArgumentNullException(nameof(collection));
             }
 
             foreach (var item in collection)
